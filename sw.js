@@ -7,7 +7,23 @@ const STATIC_ASSETS = [
     '/',
     '/index.html', 
     '/main.css',
-    '/main.js'
+    '/main.js',
+    '/images/image1-optimized.jpg',
+    '/images/image2-optimized.jpg',
+    '/images/image3-optimized.jpg',
+    '/images/image4-optimized.jpg',
+    '/images/image5-optimized.jpg',
+    '/images/image6-optimized.jpg',
+    '/images/image7-optimized.jpg',
+    '/images/image8-optimized.jpg',
+    '/images/image9-optimized.jpg',
+    '/images/image10-optimized.jpg',
+    '/images/image11-optimized.jpg',
+    '/images/image12-optimized.jpg',
+    '/images/image13-optimized.jpg',
+    '/images/image14-optimized.jpg',
+    '/images/image15-optimized.jpg',
+    '/images/image16-optimized.jpg',
 ];
 
 // Устанавливаем Service Worker
