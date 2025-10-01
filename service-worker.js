@@ -8,7 +8,6 @@ const STATIC_ASSETS = [
     '/index.html', 
     '/main.css',
     '/main.js'
-    // добавьте другие файлы если есть
 ];
 
 // Устанавливаем Service Worker
