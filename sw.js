@@ -34,16 +34,31 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('Service Worker: Caching static assets');
-                return cache.addAll(STATIC_ASSETS);
+                // Используем улучшенное кэширование с обработкой ошибок
+                return cacheAssetsWithFallback(cache, STATIC_ASSETS);
             })
-            .then(() => self.skipWaiting())
+            .then(() => {
+                console.log('Service Worker: Installation completed');
+                return self.skipWaiting();
+            })
+            .catch((error) => {
+                console.error('Service Worker: Installation failed', error);
+                // Все равно продолжаем установку даже с ошибками
+                return self.skipWaiting();
+            })
     );
 });
 
 // Активируем Service Worker  
 self.addEventListener('activate', (event) => {
     console.log('Service Worker: Activated');
-    event.waitUntil(self.clients.claim());
+    event.waitUntil(
+        Promise.all([
+            self.clients.claim(),
+            // Очищаем старые кэши
+            clearOldCaches()
+        ])
+    );
 });
 
 // Обрабатываем запросы - КЭШИРУЕМ ИЗОБРАЖЕНИЯ
@@ -58,12 +73,46 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Для остальных запросов
+    // Для остальных запросов - Network First с fallback к кэшу
     event.respondWith(
         fetch(event.request)
+            .then((response) => {
+                // Кэшируем успешные ответы
+                if (response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME)
+                        .then((cache) => cache.put(event.request, responseClone));
+                }
+                return response;
+            })
             .catch(() => caches.match(event.request))
     );
 });
+
+// Улучшенная функция кэширования с обработкой ошибок
+async function cacheAssetsWithFallback(cache, assets) {
+    const results = await Promise.allSettled(
+        assets.map(asset => {
+            return cache.add(asset).catch(error => {
+                console.warn(`Service Worker: Failed to cache ${asset}`, error);
+                // Возвращаем успешный промис, чтобы не прерывать цепочку
+                return Promise.resolve();
+            });
+        })
+    );
+
+    // Анализируем результаты
+    const successful = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
+    
+    console.log(`Service Worker: Caching completed - ${successful} successful, ${failed} failed`);
+    
+    if (failed > 0) {
+        console.warn(`Service Worker: ${failed} assets failed to cache`);
+    }
+    
+    return Promise.resolve();
+}
 
 // Стратегия для изображений: Cache First
 async function handleImageRequest(request) {
@@ -89,6 +138,23 @@ async function handleImageRequest(request) {
         return networkResponse;
     } catch (error) {
         console.log('Service Worker: Network failed for image', request.url);
-        return new Response('Image not available');
+        // Возвращаем заглушку или пытаемся найти в основном кэше
+        const fallbackResponse = await caches.match(request);
+        return fallbackResponse || new Response('Image not available', {
+            status: 404,
+            headers: { 'Content-Type': 'text/plain' }
+        });
     }
+}
+
+// Очистка старых кэшей
+async function clearOldCaches() {
+    const cacheKeys = await caches.keys();
+    const deletePromises = cacheKeys.map(key => {
+        if (key !== CACHE_NAME && key !== IMAGE_CACHE_NAME) {
+            console.log('Service Worker: Deleting old cache', key);
+            return caches.delete(key);
+        }
+    });
+    return Promise.all(deletePromises);
 }
