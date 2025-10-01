@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
+    <title>Лента новостей</title>
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-<body>
+    <div class="service-worker-status" id="swStatus">
+        Service Worker: Загрузка...
+    </div>
+    
     <div class="decoration decoration-1"></div>
     <div class="decoration decoration-2"></div>
     
@@ -26,5 +28,6 @@
     </div>
 
     <script src="main.js"></script>
+    <script src="service_worker.js"></script>
 </body>
 </html>
