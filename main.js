@@ -3,7 +3,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         const swStatus = document.getElementById('swStatus');
         
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('/service_worker.js')
             .then(function(registration) {
                 console.log('ServiceWorker registration successful');
                 swStatus.textContent = '✅ Cache Ready';

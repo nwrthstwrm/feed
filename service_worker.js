@@ -1,4 +1,4 @@
-// service-worker.js
+// service_worker.js
 const CACHE_NAME = 'image-cache-v1';
 const IMAGE_CACHE_NAME = 'images-cache-v1';
 
